@@ -149,8 +149,8 @@ export async function moverIngredienteANevera(id) {
   }
 }
 
-export async function marcarIngredienteComprado(id) {
-    return await editarIngredienteCompra(id, { comprado: true });
+export async function marcarIngredienteComprado(id, comprado) {
+    return await editarIngredienteCompra(id, { comprado: comprado });
 }
 
 export async function eliminarIngredienteCompra(id) {
