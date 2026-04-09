@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { getRecetas } from '../api/index.js';
 
-const Recetas = ({ ingredientes }) => {
+const Recetas = ({ seleccionados }) => {
     const [recetas, setRecetas] = useState([]);
     const [loading, setLoading] = useState(false);
+    const haySeleccionados = seleccionados.length > 0;
 
     const handleGetRecetas = async () => {
         setLoading(true);
         try {
-            const data = await getRecetas();
+            const data = await getRecetas(haySeleccionados ? seleccionados : []);
             setRecetas(data);
         } catch (error) {
             console.error('Error al obtener recetas:', error);
@@ -21,7 +22,9 @@ const Recetas = ({ ingredientes }) => {
         <div>
             <h2>Recetas</h2>
             <button onClick={handleGetRecetas} disabled={loading}>
-                {loading ? 'Buscando...' : 'Sugerir recetas'}
+                {loading ? 'Buscando...' : haySeleccionados 
+                    ? `Sugerir con seleccionados (${seleccionados.length})` 
+                    : 'Sugerir con todos'}
             </button>
 
             {loading && <p>Cargando recetas...</p>}

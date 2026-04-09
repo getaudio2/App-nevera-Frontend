@@ -169,9 +169,13 @@ export async function eliminarIngredienteCompra(id) {
 }
 
 // Endpoint de las recetas con IA
-export async function getRecetas() {
+export async function getRecetas(ingredientes = []) {
     const response = await fetch(`${BASE_URL}/recetas`, {
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ingredientes }),
     });
     if (!response.ok) throw new Error('Error al obtener recetas');
     return await response.json();

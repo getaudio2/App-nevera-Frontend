@@ -67,7 +67,6 @@ const App = () => {
                     onDeseleccionarTodos={() => setSeleccionados([])}
                 />
                 <Recetas 
-                    ingredientes={ingredientesNevera}
                     seleccionados={seleccionados}
                 />
 
