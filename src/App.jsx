@@ -47,10 +47,13 @@ const App = () => {
     });
 
     return (
-        <div>
-            <Nevera ingredientes={ingredientesNevera} />
-            <Compra ingredientes={ingredientesCompra} />
-            <Recetas />
+        <div className='bg-sky-200 min-h-screen'>
+            <div className='max-w-md mx-auto px-4 py-8'>
+                <h1 className='text-2xl font-bold text-sky-900 mb-6'>🧊 Mi Nevera</h1>
+                <Nevera ingredientes={ingredientesNevera} />
+                <Compra ingredientes={ingredientesCompra} />
+                <Recetas />
+            </div>
         </div>
     );
 };
