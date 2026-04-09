@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getIngredientesNevera, getIngredientesCompra } from './api/index.js';
 import { useWebSocket } from './hooks/useWebSocket.js';
+import Nevera from './components/Nevera.jsx';
+import Compra from './components/Compra.jsx';
 
 const App = () => {
     const [ingredientesNevera, setIngredientesNevera] = useState([]);
@@ -21,6 +23,7 @@ const App = () => {
             setIngredientesNevera((prev) => prev.map((ing) => (ing.id === datos.id ? datos : ing)));
         }
         if (evento === 'nevera:move') {
+            console.log('nevera:move datos:', datos);
             setIngredientesNevera((prev) => prev.filter((ing) => ing.id !== datos.id));
             setIngredientesCompra((prev) => [...prev, datos]);
         }
@@ -44,19 +47,8 @@ const App = () => {
 
     return (
         <div>
-        <h1>Mi Nevera</h1>
-        <ul>
-            {ingredientesNevera.map((ingrediente) => (
-            <li key={ingrediente.id}>{ingrediente.nombre}</li>
-            ))}
-        </ul>
-
-        <h1>Lista de la Compra</h1>
-        <ul>
-            {ingredientesCompra.map((item) => (
-            <li key={item.id}>{item.nombre}</li>
-            ))}
-        </ul>
+            <Nevera ingredientes={ingredientesNevera} />
+            <Compra ingredientes={ingredientesCompra} />
         </div>
     );
 };
