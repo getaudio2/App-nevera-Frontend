@@ -42,7 +42,7 @@ const Compra = ({ ingredientes }) => {
 
     return (
         <div className='bg-white/70 backdrop-blur-sm border border-amber-100 rounded-xl shadow-md p-4 mb-6'>
-          <h2 className='text-lg font-semibold text-sky-900 mb-4'>🛒 Lista de Compra</h2>
+          <h1 className='text-2xl font-bold text-sky-900 mb-6'>🛒 Lista de Compra</h1>
             <dialog 
                 ref={dialogRef}
                 className='rounded-xl p-6 shadow-xl backdrop:bg-black/50 w-80'
@@ -77,19 +77,21 @@ const Compra = ({ ingredientes }) => {
                     </div>
                 </div>
             </dialog>
-            <button 
-              onClick={() => dialogRef.current.showModal()}
-              className='bg-sky-400 text-white rounded-lg px-4 py-2 text-sm font-medium'
-              >
-                + Añadir
-            </button>
+            <div className='flex items-center justify-between mb-4'>
+                <button 
+                  onClick={() => dialogRef.current.showModal()}
+                  className='bg-sky-400 text-white rounded-lg px-4 py-2 text-sm font-medium'
+                  >
+                    + Añadir
+                </button>
+            </div>
             <ul className='flex flex-col gap-2'>
                 {ingredientes.map((item) => (
                     <li key={item.id} className='flex justify-between items-center bg-white/50 rounded-lg px-3 py-2'>
                       <span className={`text-sm text-sky-900 ${item.comprado ? 'line-through opacity-50' : ''}`}>{item.nombre} · {item.cantidad}</span>
                       <div className='flex gap-2'>
                         <button onClick={() => handleMoverANevera(item.id)} className='text-xs text-sky-600'>📦</button>
-                        <button onClick={() => handleMarcarComprado(item.id, !item.comprado)} className={`text-xs ${item.comprado ? 'text-gray-400' : 'text-green-600'}`}>{item.comprado ? '↩' : '✓'}</button>
+                        <button onClick={() => handleMarcarComprado(item.id, !item.comprado)} className={`text-s ${item.comprado ? 'text-gray-400' : 'text-green-600'}`}>{item.comprado ? '↩' : '✓'}</button>
                         <button onClick={() => handleEliminar(item.id)} className='text-xs text-red-400'>🗑</button>
                       </div>
                     </li>

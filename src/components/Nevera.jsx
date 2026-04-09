@@ -56,7 +56,7 @@ const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onD
 
     return (
         <div className='bg-white/70 backdrop-blur-sm border border-amber-100 rounded-xl shadow-md p-4 mb-6'>
-            <h2 className='text-lg font-semibold text-sky-900 mb-4'>🥦 Nevera</h2>
+            <h1 className='text-2xl font-bold text-sky-900 mb-6'>🧊 Mi Nevera</h1>
             
             {/* Formulario */}
             <dialog 

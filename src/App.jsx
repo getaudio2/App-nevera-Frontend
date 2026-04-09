@@ -9,6 +9,7 @@ const App = () => {
     const [ingredientesNevera, setIngredientesNevera] = useState([]);
     const [ingredientesCompra, setIngredientesCompra] = useState([]);
     const [seleccionados, setSeleccionados] = useState([]);
+    const [vista, setVista] = useState('principal'); // 'principal' o 'compra'
 
     const toggleSeleccionado = (nombre) => {
         setSeleccionados(prev =>
@@ -58,19 +59,38 @@ const App = () => {
     return (
         <div className='bg-sky-200 min-h-screen'>
             <div className='max-w-md mx-auto px-4 py-8'>
-                <h1 className='text-2xl font-bold text-sky-900 mb-6'>🧊 Mi Nevera</h1>
-                <Nevera 
-                    ingredientes={ingredientesNevera} 
-                    seleccionados={seleccionados}
-                    onToggle={toggleSeleccionado}
-                    onSeleccionarTodos={() => setSeleccionados(ingredientesNevera.map(i => i.nombre))}
-                    onDeseleccionarTodos={() => setSeleccionados([])}
-                />
-                <Recetas 
-                    seleccionados={seleccionados}
-                />
+                {/*<h1 className='text-2xl font-bold text-sky-900 mb-6'>🧊 Mi Nevera</h1>*/}
 
-                <Compra ingredientes={ingredientesCompra} />
+                {vista === 'principal' ? (
+                    <>
+                        <button 
+                            onClick={() => setVista('compra')}
+                            className='bg-white/70 border border-amber-100 text-sky-900 rounded-lg px-3 py-2 text-sm font-medium shadow-sm'
+                        >
+                            🛒 Lista de compra
+                        </button>
+                        <Nevera 
+                            ingredientes={ingredientesNevera} 
+                            seleccionados={seleccionados}
+                            onToggle={toggleSeleccionado}
+                            onSeleccionarTodos={() => setSeleccionados(ingredientesNevera.map(i => i.nombre))}
+                            onDeseleccionarTodos={() => setSeleccionados([])}
+                        />
+                        <Recetas 
+                            seleccionados={seleccionados}
+                        />
+                    </>
+                ) : (
+                    <>
+                        <button 
+                            onClick={() => setVista('principal')}
+                            className='bg-white/70 border border-amber-100 text-sky-900 rounded-lg px-3 py-2 text-sm font-medium shadow-sm'
+                        >
+                            ← Volver
+                        </button>
+                        <Compra ingredientes={ingredientesCompra} />
+                    </>
+                )}
             </div>
         </div>
     );
