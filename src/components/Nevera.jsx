@@ -1,12 +1,20 @@
 import { useState, useRef } from 'react';
 import { addIngredienteNevera, editarIngredienteNevera, moverIngredienteACompra, eliminarIngredienteNevera } from '../api/index.js';
 
-const Nevera = ({ ingredientes }) => {
+const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onDeseleccionarTodos }) => {
     const [editandoId, setEditandoId] = useState(null);
     const [formEditar, setFormEditar] = useState({ nombre: '', cantidad: '', caduca: '' });
     const [form, setForm] = useState({ nombre: '', cantidad: '', caduca: '' });
     const dialogRef = useRef(null);
     const [loadingAdd, setLoadingAdd] = useState(false);
+
+    const handleToggleSeleccionarTodos = () => {
+        if (seleccionados.length === ingredientes.length) {
+            onDeseleccionarTodos();
+        } else {
+            onSeleccionarTodos();
+        }
+    };
 
     const handleAdd = async () => {
         if (form.nombre.trim() === '') return;
@@ -93,17 +101,31 @@ const Nevera = ({ ingredientes }) => {
                     </div>
                 </div>
             </dialog>
-            <button 
-              onClick={() => dialogRef.current.showModal()}
-              className='bg-sky-400 text-white rounded-lg px-4 py-2 text-sm font-medium'
-              >
-                + Añadir
-            </button>
+            <div className='flex items-center justify-between mb-4'>
+                <button 
+                    onClick={() => dialogRef.current.showModal()}
+                    className='bg-sky-400 text-white rounded-lg px-4 py-2 text-sm font-medium'
+                >
+                    + Añadir
+                </button>
+                <label className='flex items-center gap-2 text-sm text-sky-900 cursor-pointer'>
+                    <input
+                        type="checkbox"
+                        checked={seleccionados.length === ingredientes.length && ingredientes.length > 0}
+                        onChange={handleToggleSeleccionarTodos}
+                    />
+                    Seleccionar todos
+                </label>
+            </div>
 
             {/* Lista */}
             <ul className='flex flex-col gap-2'>
                 {ingredientes.map((ing) => (
-                    <li key={ing.id} className='flex justify-between items-center bg-white/50 rounded-lg px-3 py-2'>
+                    <li key={ing.id} className={`flex justify-between items-center rounded-lg px-3 py-2 ${
+                        seleccionados.includes(ing.nombre) 
+                            ? 'bg-sky-200' 
+                            : 'bg-white/50'
+                    }`}>
                         {editandoId === ing.id ? (
                             // modo edición — solo inputs y botones guardar/cancelar
                             // modo edición — layout vertical
@@ -135,9 +157,17 @@ const Nevera = ({ ingredientes }) => {
                         ) : (
                             // modo normal — texto y botones
                             <>
+                            <div>
+                                <input
+                                    type="checkbox"
+                                    checked={seleccionados.includes(ing.nombre)}
+                                    onChange={() => onToggle(ing.nombre)}
+                                    className='mr-2'
+                                />
                                 <span className='text-sm text-sky-900'>
                                     {ing.nombre} · {ing.cantidad} · {ing.caduca ? new Date(ing.caduca).toLocaleDateString('es-ES') : '—'}
                                 </span>
+                            </div>
                                 <div className='flex gap-2'>
                                     <button onClick={() => handleMoverACompra(ing.id)} className='text-xs text-amber-600'>🛒</button>
                                     <button onClick={() => { setEditandoId(ing.id); setFormEditar({ nombre: ing.nombre, cantidad: ing.cantidad, caduca: ing.caduca ? new Date(ing.caduca).toISOString().split('T')[0] : '' }); }} className='text-xs text-blue-600'>✏️</button>

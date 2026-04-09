@@ -8,6 +8,15 @@ import Recetas from './components/Recetas.jsx';
 const App = () => {
     const [ingredientesNevera, setIngredientesNevera] = useState([]);
     const [ingredientesCompra, setIngredientesCompra] = useState([]);
+    const [seleccionados, setSeleccionados] = useState([]);
+
+    const toggleSeleccionado = (nombre) => {
+        setSeleccionados(prev =>
+            prev.includes(nombre)
+                ? prev.filter(n => n !== nombre)
+                : [...prev, nombre]
+        );
+    };
 
     useEffect(() => {
         getIngredientesNevera().then((data) => setIngredientesNevera(data));
@@ -50,9 +59,19 @@ const App = () => {
         <div className='bg-sky-200 min-h-screen'>
             <div className='max-w-md mx-auto px-4 py-8'>
                 <h1 className='text-2xl font-bold text-sky-900 mb-6'>🧊 Mi Nevera</h1>
-                <Nevera ingredientes={ingredientesNevera} />
+                <Nevera 
+                    ingredientes={ingredientesNevera} 
+                    seleccionados={seleccionados}
+                    onToggle={toggleSeleccionado}
+                    onSeleccionarTodos={() => setSeleccionados(ingredientesNevera.map(i => i.nombre))}
+                    onDeseleccionarTodos={() => setSeleccionados([])}
+                />
+                <Recetas 
+                    ingredientes={ingredientesNevera}
+                    seleccionados={seleccionados}
+                />
+
                 <Compra ingredientes={ingredientesCompra} />
-                <Recetas />
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { getRecetas } from '../api/index.js';
 
-const Recetas = () => {
+const Recetas = ({ ingredientes }) => {
     const [recetas, setRecetas] = useState([]);
     const [loading, setLoading] = useState(false);
 
