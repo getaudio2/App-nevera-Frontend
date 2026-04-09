@@ -3,6 +3,7 @@ import { getIngredientesNevera, getIngredientesCompra } from './api/index.js';
 import { useWebSocket } from './hooks/useWebSocket.js';
 import Nevera from './components/Nevera.jsx';
 import Compra from './components/Compra.jsx';
+import Recetas from './components/Recetas.jsx';
 
 const App = () => {
     const [ingredientesNevera, setIngredientesNevera] = useState([]);
@@ -49,6 +50,7 @@ const App = () => {
         <div>
             <Nevera ingredientes={ingredientesNevera} />
             <Compra ingredientes={ingredientesCompra} />
+            <Recetas />
         </div>
     );
 };
