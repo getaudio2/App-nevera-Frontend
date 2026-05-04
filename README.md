@@ -99,4 +99,4 @@ npx cap open android   # Abre Android Studio para compilar el APK
 
 ## Repo del backend
 
-👉 [mi-nevera-backend](https://github.com/tu-usuario/mi-nevera-backend)
+👉 [mi-nevera-backend](https://github.com/getaudio2/App-nevera-Backend)
