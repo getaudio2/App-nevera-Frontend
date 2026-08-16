@@ -168,7 +168,7 @@ export async function eliminarIngredienteCompra(id) {
   }
 }
 
-// Endpoint de las recetas con IA
+// Endpoint de las recetas con Spoonacular
 export async function getRecetas(ingredientes = []) {
     const response = await fetch(`${BASE_URL}/recetas`, {
         method: 'POST',

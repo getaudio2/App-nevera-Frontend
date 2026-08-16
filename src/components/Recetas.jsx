@@ -46,11 +46,32 @@ const Recetas = ({ seleccionados }) => {
                                     {receta.missing.length === 0 ? '✓ Listo' : `Faltan ${receta.missing.length}`}
                                 </span>
                             </div>
-                            <p className='text-xs text-sky-700 mb-2'>{receta.time} · {receta.difficulty}</p>
-                            <p className='text-xs text-sky-800 mb-3'>{receta.description}</p>
+                            <div style={{ width: '100%', height: '160px', overflow: 'hidden', borderRadius: '8px', marginBottom: '12px', background: '#0f0f2a' }}>
+                                <img 
+                                    src={receta.image} 
+                                    alt={receta.name}
+                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                />
+                            </div>
+                            {receta.time && (
+                                <p className='text-xs text-sky-700 mb-2'>⏱ {receta.time}</p>
+                            )}
+
+                            {receta.steps.length > 0 && (
+                                <ol className='flex flex-col gap-1 mb-3'>
+                                    {receta.steps.map((paso, i) => (
+                                        <li key={i} className='text-xs text-sky-800'>
+                                            <span className='font-semibold'>{i + 1}.</span> {paso}
+                                        </li>
+                                    ))}
+                                </ol>
+                            )}
                             
                             {receta.missing.length > 0 && (
                                 <div className='bg-amber-50 border border-amber-100 rounded-lg px-3 py-2'>
+                                    <p className='text-xs text-amber-700'>
+                                        ✔️ Tienes: {receta.have.join(', ')}
+                                    </p>
                                     <p className='text-xs text-amber-700'>
                                         🛒 Te faltan: {receta.missing.join(', ')}
                                     </p>

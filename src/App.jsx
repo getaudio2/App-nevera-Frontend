@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { getIngredientesNevera, getIngredientesCompra } from './api/index.js';
 import { useWebSocket } from './hooks/useWebSocket.js';
-//import Nevera from './components/Nevera.jsx';
 import Nevera from './components/Nevera.jsx';
 import Compra from './components/Compra.jsx';
 import Recetas from './components/Recetas.jsx';
+import { CATALOGO } from './components/Nevera.jsx'
 
 const App = () => {
     const [ingredientesNevera, setIngredientesNevera] = useState([]);
@@ -88,7 +88,10 @@ const App = () => {
                             onDeseleccionarTodos={() => setSeleccionados([])}
                         />
                         <Recetas 
-                            seleccionados={seleccionados}
+                            seleccionados={seleccionados.map(nombre => {
+                                const item = CATALOGO.find(c => c.nombre === nombre);
+                                return item?.en || nombre;
+                            })}
                         />
                     </>
                 ) : (

@@ -1,67 +1,74 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { addIngredienteNevera, editarIngredienteNevera, moverIngredienteACompra, eliminarIngredienteNevera } from '../api/index.js';
 
 // Lista fija de ingredientes disponibles
-const CATALOGO = [
-  { nombre: 'Pollo', emoji: '🍗', categoria: 'Carnes' },
-  { nombre: 'Ternera', emoji: '🥩', categoria: 'Carnes' },
-  { nombre: 'Cerdo', emoji: '🐷', categoria: 'Carnes' },
-  { nombre: 'Salmón', emoji: '🐟', categoria: 'Carnes' },
-  { nombre: 'Atún', emoji: '🐠', categoria: 'Carnes' },
-  { nombre: 'Tomate', emoji: '🍅', categoria: 'Verduras' },
-  { nombre: 'Lechuga', emoji: '🥬', categoria: 'Verduras' },
-  { nombre: 'Cebolla', emoji: '🧅', categoria: 'Verduras' },
-  { nombre: 'Ajo', emoji: '🧄', categoria: 'Verduras' },
-  { nombre: 'Zanahoria', emoji: '🥕', categoria: 'Verduras' },
-  { nombre: 'Pimiento', emoji: '🫑', categoria: 'Verduras' },
-  { nombre: 'Brócoli', emoji: '🥦', categoria: 'Verduras' },
-  { nombre: 'Espinacas', emoji: '🌿', categoria: 'Verduras' },
-  { nombre: 'Patata', emoji: '🥔', categoria: 'Verduras' },
-  { nombre: 'Manzana', emoji: '🍎', categoria: 'Frutas' },
-  { nombre: 'Plátano', emoji: '🍌', categoria: 'Frutas' },
-  { nombre: 'Naranja', emoji: '🍊', categoria: 'Frutas' },
-  { nombre: 'Limón', emoji: '🍋', categoria: 'Frutas' },
-  { nombre: 'Fresas', emoji: '🍓', categoria: 'Frutas' },
-  { nombre: 'Leche', emoji: '🥛', categoria: 'Lácteos' },
-  { nombre: 'Queso', emoji: '🧀', categoria: 'Lácteos' },
-  { nombre: 'Yogur', emoji: '🫙', categoria: 'Lácteos' },
-  { nombre: 'Mantequilla', emoji: '🧈', categoria: 'Lácteos' },
-  { nombre: 'Huevos', emoji: '🥚', categoria: 'Lácteos' },
-  { nombre: 'Arroz', emoji: '🍚', categoria: 'Otros' },
-  { nombre: 'Pasta', emoji: '🍝', categoria: 'Otros' },
-  { nombre: 'Lentejas', emoji: '🫘', categoria: 'Otros' },
-  { nombre: 'Garbanzos', emoji: '🟡', categoria: 'Otros' },
-  { nombre: 'Pan', emoji: '🍞', categoria: 'Otros' },
-  { nombre: 'Aceite', emoji: '🫒', categoria: 'Otros' },
+export const CATALOGO = [
+  { nombre: 'Pollo', emoji: '🍗', categoria: 'Carnes', en: 'chicken' },
+  { nombre: 'Ternera', emoji: '🥩', categoria: 'Carnes', en: 'beef' },
+  { nombre: 'Cerdo', emoji: '🐷', categoria: 'Carnes', en: 'pork' },
+  { nombre: 'Salmón', emoji: '🐟', categoria: 'Carnes', en: 'salmon' },
+  { nombre: 'Atún', emoji: '🐠', categoria: 'Carnes', en: 'tuna' },
+  { nombre: 'Tomate', emoji: '🍅', categoria: 'Verduras', en: 'tomato' },
+  { nombre: 'Lechuga', emoji: '🥬', categoria: 'Verduras', en: 'lettuce' },
+  { nombre: 'Cebolla', emoji: '🧅', categoria: 'Verduras', en: 'onion' },
+  { nombre: 'Ajo', emoji: '🧄', categoria: 'Verduras', en: 'garlic' },
+  { nombre: 'Zanahoria', emoji: '🥕', categoria: 'Verduras', en: 'carrot' },
+  { nombre: 'Pimiento', emoji: '🫑', categoria: 'Verduras', en: 'bell pepper' },
+  { nombre: 'Brócoli', emoji: '🥦', categoria: 'Verduras', en: 'broccoli' },
+  { nombre: 'Espinacas', emoji: '🌿', categoria: 'Verduras', en: 'spinach' },
+  { nombre: 'Patata', emoji: '🥔', categoria: 'Verduras', en: 'potato' },
+  { nombre: 'Manzana', emoji: '🍎', categoria: 'Frutas', en: 'apple' },
+  { nombre: 'Plátano', emoji: '🍌', categoria: 'Frutas', en: 'banana' },
+  { nombre: 'Naranja', emoji: '🍊', categoria: 'Frutas', en: 'orange' },
+  { nombre: 'Limón', emoji: '🍋', categoria: 'Frutas', en: 'lemon' },
+  { nombre: 'Fresas', emoji: '🍓', categoria: 'Frutas', en: 'strawberries' },
+  { nombre: 'Leche', emoji: '🥛', categoria: 'Lácteos', en: 'milk' },
+  { nombre: 'Queso', emoji: '🧀', categoria: 'Lácteos', en: 'cheese' },
+  { nombre: 'Yogur', emoji: '🫙', categoria: 'Lácteos', en: 'yogurt' },
+  { nombre: 'Mantequilla', emoji: '🧈', categoria: 'Lácteos', en: 'butter' },
+  { nombre: 'Huevos', emoji: '🥚', categoria: 'Lácteos', en: 'eggs' },
+  { nombre: 'Arroz', emoji: '🍚', categoria: 'Otros', en: 'rice' },
+  { nombre: 'Pasta', emoji: '🍝', categoria: 'Otros', en: 'pasta' },
+  { nombre: 'Lentejas', emoji: '🫘', categoria: 'Otros', en: 'lentils' },
+  { nombre: 'Garbanzos', emoji: '🟡', categoria: 'Otros', en: 'chickpeas' },
+  { nombre: 'Pan', emoji: '🍞', categoria: 'Otros', en: 'bread' },
+  { nombre: 'Aceite', emoji: '🫒', categoria: 'Otros', en: 'olive oil' },
 ];
 
 const CATEGORIAS = ['Todo', 'Carnes', 'Verduras', 'Frutas', 'Lácteos', 'Otros'];
 
 // Devuelve el color del indicador de caducidad
 function getExpiryColor(caduca) {
-  if (!caduca) return '#6b7280'; // gris — sin fecha
-  const dias = Math.ceil((new Date(caduca) - new Date()) / (1000 * 60 * 60 * 24));
-  if (dias < 0) return '#ef4444';   // rojo — caducado
-  if (dias <= 3) return '#f97316';  // naranja — caduca pronto
-  return '#22c55e';                 // verde — bien
+  if (caduca === 'hoy') return '#ef4444';
+  if (caduca === 'pronto') return '#f97316';
+  if (caduca === 'ok') return '#22c55e';
+  return '#6b7280'; // sin fecha / null
 }
 
 const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onDeseleccionarTodos }) => {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [categoriaActiva, setCategoriaActiva] = useState('Todo');
-  const [form, setForm] = useState({ nombre: '', caduca: '' });
+  const [form, setForm] = useState({ nombre: '', caduca: 'ok' });
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [slotActivo, setSlotActivo] = useState(null); // id del slot con menú abierto
+  const pressTimer = useRef(null);
+
+  const handlePressStart = (id) => {
+    pressTimer.current = setTimeout(() => setSlotActivo(id), 500);
+  };
+
+  const handlePressEnd = () => {
+    clearTimeout(pressTimer.current);
+  };
 
   const handleAdd = async () => {
     if (!form.nombre) return;
     setLoadingAdd(true);
     const item = CATALOGO.find(c => c.nombre === form.nombre);
-    console.log('form.nombre:', form.nombre);
-    console.log('item encontrado:', item);
     try {
       await addIngredienteNevera({
         nombre: item.nombre,
+        nombre_en: item.en,
         cantidad: '',
         caduca: form.caduca,
         emoji: item.emoji,
@@ -175,6 +182,10 @@ const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onD
             >
               {/* Slot principal */}
               <div
+                onMouseDown={() => handlePressStart(ing.id)}
+                onMouseUp={handlePressEnd}
+                onTouchStart={() => handlePressStart(ing.id)}
+                onTouchEnd={handlePressEnd}
                 onClick={() => onToggle(ing.nombre)}
                 style={{
                   background: seleccionado
@@ -216,57 +227,44 @@ const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onD
                 }}>
                   {ing.nombre}
                 </div>
-
-                {/* Botón de menú (⋯) */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); setSlotActivo(menuAbierto ? null : ing.id); }}
-                  style={{
-                    position: 'absolute',
-                    bottom: '4px',
-                    right: '4px',
-                    background: 'none',
-                    border: 'none',
-                    color: '#8888aa',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                    padding: '0',
-                    lineHeight: 1,
-                  }}
-                >
-                  ⋯
-                </button>
               </div>
 
               {/* Menú contextual */}
               {menuAbierto && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: '100%',
-                  right: 0,
-                  background: '#1e1e3a',
-                  border: '1px solid #c9a84c',
-                  borderRadius: '8px',
-                  padding: '6px',
-                  zIndex: 10,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px',
-                  minWidth: '120px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-                }}>
-                  <button
-                    onClick={() => handleMoverACompra(ing.id)}
-                    style={{ background: 'none', border: 'none', color: '#f0c050', fontSize: '12px', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px' }}
-                  >
-                    🛒 Mover a compra
-                  </button>
-                  <button
-                    onClick={() => handleEliminar(ing.id)}
-                    style={{ background: 'none', border: 'none', color: '#f87171', fontSize: '12px', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px' }}
-                  >
-                    🗑 Eliminar
-                  </button>
-                </div>
+                <>
+                  <div
+                    style={{ position: 'fixed', inset: 0, zIndex: 9 }}
+                    onClick={() => setSlotActivo(null)}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '100%',
+                    right: 0,
+                    background: '#1e1e3a',
+                    border: '1px solid #c9a84c',
+                    borderRadius: '8px',
+                    padding: '6px',
+                    zIndex: 10,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    minWidth: '120px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                  }}>
+                    <button
+                      onClick={() => handleMoverACompra(ing.id)}
+                      style={{ background: 'none', border: 'none', color: '#f0c050', fontSize: '12px', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px' }}
+                    >
+                      🛒 Mover a compra
+                    </button>
+                    <button
+                      onClick={() => handleEliminar(ing.id)}
+                      style={{ background: 'none', border: 'none', color: '#f87171', fontSize: '12px', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px' }}
+                    >
+                      🗑 Eliminar
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           );
@@ -360,20 +358,31 @@ const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onD
               </select>
 
               {/* Fecha de caducidad */}
-              <input
-                type='date'
-                value={form.caduca}
-                onChange={(e) => setForm({ ...form, caduca: e.target.value })}
-                style={{
-                  background: '#0f0f2a',
-                  border: '1px solid #3a3a5c',
-                  borderRadius: '8px',
-                  padding: '10px',
-                  color: '#e8d5a3',
-                  fontSize: '14px',
-                  fontFamily: 'Georgia, serif',
-                }}
-              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {[
+                  { valor: 'ok', emoji: '🟢', label: 'Más de 3 días', default: true },
+                  { valor: 'pronto', emoji: '🟠', label: 'Menos de 3 días' },
+                  { valor: 'hoy', emoji: '🔴', label: 'Hoy' },
+                ].map(op => (
+                  <button
+                    key={op.valor}
+                    onClick={() => setForm({ ...form, caduca: op.valor })}
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      borderRadius: '8px',
+                      border: `2px solid ${form.caduca === op.valor ? '#c9a84c' : '#3a3a5c'}`,
+                      background: form.caduca === op.valor ? 'rgba(201,168,76,0.2)' : 'transparent',
+                      color: '#e8d5a3',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      fontFamily: 'Georgia, serif',
+                    }}
+                  >
+                    {op.emoji}<br/>{op.label}
+                  </button>
+                ))}
+              </div>
 
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
                 <button
