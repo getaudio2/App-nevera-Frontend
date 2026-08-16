@@ -10,7 +10,7 @@ export function useWebSocket(onMessage) {
         onMessageRef.current = onMessage;
     }, [onMessage]);
 
-    useEffect(() => {
+    /*useEffect(() => {
         const ws = new WebSocket(WS_URL);
 
         // Cuando llegue un mensaje, parseamos el json y llamamos a onMessage con los datos
@@ -30,5 +30,38 @@ export function useWebSocket(onMessage) {
 
         // Limpiamos la conexión al desmontar el componente
         return () => ws.close();
-    }, []); // Array vacío para que solo se ejecute una vez al montar el componente
+    }, []); // Array vacío para que solo se ejecute una vez al montar el componente*/
+    useEffect(() => {
+        let ws;
+        let reconnectTimeout;
+
+        function connect() {
+            ws = new WebSocket(WS_URL);
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    onMessageRef.current(data);
+                } catch (error) {
+                    console.error('Error al parsear mensaje:', error);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('Error WebSocket:', error);
+            };
+
+            ws.onclose = () => {
+                // Reconectar después de 3 segundos
+                reconnectTimeout = setTimeout(connect, 3000);
+            };
+        }
+
+        connect();
+
+        return () => {
+            clearTimeout(reconnectTimeout);
+            ws.close();
+        };
+    }, []);
 }
