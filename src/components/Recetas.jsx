@@ -7,6 +7,7 @@ const Recetas = ({ seleccionados }) => {
     const haySeleccionados = seleccionados.length > 0;
 
     const handleGetRecetas = async () => {
+        console.log('seleccionados que se mandan:', seleccionados);
         setLoading(true);
         try {
             const data = await getRecetas(haySeleccionados ? seleccionados : []);
@@ -57,9 +58,9 @@ const Recetas = ({ seleccionados }) => {
                                 <p className='text-xs text-sky-700 mb-2'>⏱ {receta.time}</p>
                             )}
 
-                            {receta.steps.length > 0 && (
+                            {(receta.steps || []).length > 0 && (
                                 <ol className='flex flex-col gap-1 mb-3'>
-                                    {receta.steps.map((paso, i) => (
+                                    {(receta.steps || []).map((paso, i) => (
                                         <li key={i} className='text-xs text-sky-800'>
                                             <span className='font-semibold'>{i + 1}.</span> {paso}
                                         </li>
@@ -67,13 +68,13 @@ const Recetas = ({ seleccionados }) => {
                                 </ol>
                             )}
                             
-                            {receta.missing.length > 0 && (
+                            {(receta.missing || []).length > 0 && (
                                 <div className='bg-amber-50 border border-amber-100 rounded-lg px-3 py-2'>
                                     <p className='text-xs text-amber-700'>
-                                        ✔️ Tienes: {receta.have.join(', ')}
+                                        ✔️ Tienes: {(receta.have || []).join(', ')}
                                     </p>
                                     <p className='text-xs text-amber-700'>
-                                        🛒 Te faltan: {receta.missing.join(', ')}
+                                        🛒 Te faltan: {(receta.missing || []).join(', ')}
                                     </p>
                                 </div>
                             )}
