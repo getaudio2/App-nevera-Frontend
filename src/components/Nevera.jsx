@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
 import { addIngredienteNevera, editarIngredienteNevera, moverIngredienteACompra, eliminarIngredienteNevera } from '../api/index.js';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import Tesseract from 'tesseract.js';
 
 // Lista fija de ingredientes disponibles
 export const CATALOGO = [
@@ -30,9 +32,19 @@ export const CATALOGO = [
   { nombre: 'Arroz', emoji: '🍚', categoria: 'Otros', en: 'rice' },
   { nombre: 'Pasta', emoji: '🍝', categoria: 'Otros', en: 'pasta' },
   { nombre: 'Lentejas', emoji: '🫘', categoria: 'Otros', en: 'lentils' },
+  { nombre: 'Lenteja', emoji: '🫘', categoria: 'Otros', en: 'lentils' },
   { nombre: 'Garbanzos', emoji: '🟡', categoria: 'Otros', en: 'chickpeas' },
   { nombre: 'Pan', emoji: '🍞', categoria: 'Otros', en: 'bread' },
   { nombre: 'Aceite', emoji: '🫒', categoria: 'Otros', en: 'olive oil' },
+  { nombre: 'Leche de soja', emoji: '🥛', categoria: 'Lácteos', en: 'soy milk' },
+  { nombre: 'Naranjas', emoji: '🍊', categoria: 'Frutas', en: 'orange' },
+  { nombre: 'Nectarina', emoji: '🍑', categoria: 'Frutas', en: 'nectarine' },
+  { nombre: 'Melocotón', emoji: '🍑', categoria: 'Frutas', en: 'peach' },
+  { nombre: 'Patatas', emoji: '🥔', categoria: 'Verduras', en: 'potato' },
+  { nombre: 'Arroz integral', emoji: '🍚', categoria: 'Otros', en: 'brown rice' },
+  { nombre: 'Lentejas pardinas', emoji: '🫘', categoria: 'Otros', en: 'lentils' },
+  { nombre: 'Lenteja pardina', emoji: '🫘', categoria: 'Otros', en: 'lentils' },
+
 ];
 
 const CATEGORIAS = ['Todo', 'Carnes', 'Verduras', 'Frutas', 'Lácteos', 'Otros'];
@@ -46,12 +58,94 @@ function getExpiryColor(caduca) {
 }
 
 const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onDeseleccionarTodos }) => {
-  const [modalAbierto, setModalAbierto] = useState(false);
+  const [modalAbierto, setModalAbierto] = useState(false); // Modal para añadir ingrediente manualmente
+  const [modalConfirmar, setModalConfirmar] = useState(false); // Modal de confirmación tras escanear el ticket
+  const [escaneando, setEscaneando] = useState(false); // Estado de escaneo de ticket
+  const [ingredientesDetectados, setIngredientesDetectados] = useState([]); // Ingredientes detectados tras escanear ticket
   const [categoriaActiva, setCategoriaActiva] = useState('Todo');
   const [form, setForm] = useState({ nombre: '', caduca: 'ok' });
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [slotActivo, setSlotActivo] = useState(null); // id del slot con menú abierto
   const pressTimer = useRef(null);
+  const [menuEscanear, setMenuEscanear] = useState(false);
+
+  const handleEscanear = async (source) => {
+    setMenuEscanear(false);
+    try {
+        const foto = await Camera.getPhoto({
+            resultType: CameraResultType.Base64,
+            source: source,
+            quality: 90,
+        });
+
+        setEscaneando(true);
+
+        const { data: { text } } = await Tesseract.recognize(
+            `data:image/jpeg;base64,${foto.base64String}`,
+            'spa+eng',
+        );
+
+        console.log('Texto detectado:', text);
+
+        // Parsear líneas del ticket
+        const lineas = text.split('\n').filter(l => l.trim().length > 2);
+        const detectados = [];
+
+        const IGNORAR = ['bebida', 'refresco', 'té', 'te', 'agua', 'horchata', 'zumo', 'fruta +'];
+
+        for (const linea of lineas) {
+            const lineaLower = linea.toLowerCase();
+    
+            // Ignorar líneas que contengan palabras de bebidas
+            if (IGNORAR.some(palabra => lineaLower.includes(palabra))) continue;
+
+            // Ignorar líneas que son solo números (totales, precios)
+            if (/^\d+[,.]?\d*$/.test(linea.trim())) continue;
+
+            const item = CATALOGO.find(c =>
+                linea.toUpperCase().includes(c.en.toUpperCase()) ||
+                linea.toUpperCase().includes(c.nombre.toUpperCase())
+            );
+
+            if (item && !detectados.find(d => d.nombre === item.nombre)) {
+                // Extraer cantidad — buscar número entero en la línea
+                /*const matchCantidad = linea.match(/\b(\d+)\b(?!\s*[,.]\d)/);
+                const cantidad = matchCantidad ? matchCantidad[1] : '1';*/
+
+                detectados.push({
+                    ...item,
+                    //cantidad,
+                    caduca: 'ok',
+                });
+            }
+        }
+
+        setIngredientesDetectados(detectados);
+        setModalConfirmar(true);
+    } catch (error) {
+        console.error('Error al escanear:', error);
+    } finally {
+        setEscaneando(false);
+    }
+  };
+
+  const handleConfirmarEscaneo = async () => {
+    try {
+        await Promise.all(ingredientesDetectados.map(item =>
+            addIngredienteNevera({
+                nombre: item.nombre,
+                nombre_en: item.en,
+                emoji: item.emoji,
+                categoria: item.categoria,
+                caduca: item.caduca,
+            })
+        ));
+        setIngredientesDetectados([]);
+        setModalConfirmar(false);
+    } catch (error) {
+        console.error('Error al añadir ingredientes escaneados:', error);
+    }
+  };
 
   const handlePressStart = (id) => {
     pressTimer.current = setTimeout(() => setSlotActivo(id), 500);
@@ -69,7 +163,6 @@ const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onD
       await addIngredienteNevera({
         nombre: item.nombre,
         nombre_en: item.en,
-        cantidad: '',
         caduca: form.caduca,
         emoji: item.emoji,
         categoria: item.categoria,
@@ -137,6 +230,50 @@ const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onD
         >
           + Añadir
         </button>
+        <div style={{ position: 'relative' }}>
+          <button
+              onClick={() => !escaneando && setMenuEscanear(!menuEscanear)}
+              disabled={escaneando}
+              style={{
+                  background: escaneando ? '#3a3a5c' : 'linear-gradient(135deg, #4c6ac9, #304880)',
+                  color: escaneando ? '#6666aa' : 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px 16px',
+                  fontWeight: 'bold',
+                  fontSize: '13px',
+                  cursor: escaneando ? 'not-allowed' : 'pointer',
+                  fontFamily: 'Georgia, serif',
+              }}
+          >
+              {escaneando ? '🔍 Leyendo...' : '📷 Ticket'}
+          </button>
+
+          {menuEscanear && !escaneando && (
+              <>
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 9 }} onClick={() => setMenuEscanear(false)} />
+                  <div style={{
+                      position: 'absolute', top: '100%', left: 0, zIndex: 10,
+                      background: '#1e1e3a', border: '1px solid #c9a84c',
+                      borderRadius: '8px', padding: '6px', marginTop: '4px',
+                      minWidth: '150px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                  }}>
+                      <button
+                          onClick={() => handleEscanear(CameraSource.Camera)}
+                          style={{ display: 'block', width: '100%', background: 'none', border: 'none', color: '#e8d5a3', padding: '8px', textAlign: 'left', cursor: 'pointer', fontSize: '13px', fontFamily: 'Georgia, serif' }}
+                      >
+                          📷 Abrir cámara
+                      </button>
+                      <button
+                          onClick={() => handleEscanear(CameraSource.Photos)}
+                          style={{ display: 'block', width: '100%', background: 'none', border: 'none', color: '#e8d5a3', padding: '8px', textAlign: 'left', cursor: 'pointer', fontSize: '13px', fontFamily: 'Georgia, serif' }}
+                      >
+                          🖼️ Subir imagen
+                      </button>
+                  </div>
+              </>
+          )}
+      </div>
       </div>
 
       {/* Filtros de categoría */}
@@ -422,6 +559,99 @@ const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onD
           </div>
         </div>
       )}
+      {modalConfirmar && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)' }} onClick={() => setModalAbierto(null)} />
+            <div style={{
+                position: 'relative', zIndex: 10,
+                background: 'linear-gradient(160deg, #1a1a2e, #16213e)',
+                border: '2px solid #c9a84c',
+                borderRadius: '16px',
+                padding: '24px',
+                width: '300px',
+                maxHeight: '80vh',
+                overflowY: 'auto',
+                fontFamily: 'Georgia, serif',
+            }}>
+                <h3 style={{ color: '#c9a84c', margin: '0 0 4px', fontSize: '16px' }}>Ingredientes detectados</h3>
+                <p style={{ color: '#8888aa', fontSize: '12px', margin: '0 0 16px' }}>
+                    {ingredientesDetectados.length === 0 ? 'No se detectó ningún ingrediente del catálogo.' : 'Ajusta la caducidad y confirma.'}
+                </p>
+
+                {ingredientesDetectados.map((item, i) => (
+                    <div key={i} style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid #3a3a5c',
+                        borderRadius: '10px',
+                        padding: '10px',
+                        marginBottom: '10px',
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <span style={{ color: '#e8d5a3', fontSize: '14px' }}>
+                                {item.emoji} {item.nombre}
+                            </span>
+                            <button
+                                onClick={() => setIngredientesDetectados(prev => prev.filter((_, j) => j !== i))}
+                                style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '14px' }}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        {/* Selector de caducidad */}
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                            {[
+                                { valor: 'ok', emoji: '🟢', label: 'Bien' },
+                                { valor: 'pronto', emoji: '🟠', label: 'Pronto' },
+                                { valor: 'hoy', emoji: '🔴', label: 'Hoy' },
+                            ].map(op => (
+                                <button
+                                    key={op.valor}
+                                    onClick={() => setIngredientesDetectados(prev =>
+                                        prev.map((d, j) => j === i ? { ...d, caduca: op.valor } : d)
+                                    )}
+                                    style={{
+                                        flex: 1,
+                                        padding: '4px',
+                                        borderRadius: '6px',
+                                        border: `1px solid ${item.caduca === op.valor ? '#c9a84c' : '#3a3a5c'}`,
+                                        background: item.caduca === op.valor ? 'rgba(201,168,76,0.2)' : 'transparent',
+                                        color: '#e8d5a3',
+                                        fontSize: '11px',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    {op.emoji} {op.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <button
+                        onClick={() => setModalConfirmar(false)}
+                        style={{ flex: 1, background: 'transparent', border: '1px solid #3a3a5c', borderRadius: '8px', padding: '8px', color: '#8888aa', cursor: 'pointer', fontSize: '13px' }}
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={handleConfirmarEscaneo}
+                        disabled={ingredientesDetectados.length === 0}
+                        style={{
+                            flex: 1,
+                            background: ingredientesDetectados.length > 0 ? 'linear-gradient(135deg, #c9a84c, #a07830)' : '#3a3a5c',
+                            border: 'none', borderRadius: '8px', padding: '8px',
+                            color: ingredientesDetectados.length > 0 ? '#1a1a2e' : '#6666aa',
+                            fontWeight: 'bold', cursor: ingredientesDetectados.length > 0 ? 'pointer' : 'not-allowed',
+                            fontSize: '13px',
+                        }}
+                    >
+                        Añadir todos
+                    </button>
+                </div>
+            </div>
+        </div>
+    )}
     </div>
   );
 };
