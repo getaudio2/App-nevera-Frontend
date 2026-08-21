@@ -26,7 +26,7 @@ export const CATALOGO = [
   { nombre: 'Fresas', emoji: '🍓', categoria: 'Frutas', en: 'strawberries' },
   { nombre: 'Leche', emoji: '🥛', categoria: 'Lácteos', en: 'milk' },
   { nombre: 'Queso', emoji: '🧀', categoria: 'Lácteos', en: 'cheese' },
-  { nombre: 'Yogur', emoji: '🫙', categoria: 'Lácteos', en: 'yogurt' },
+  { nombre: 'Yogur', emoji: '🍶', categoria: 'Lácteos', en: 'yogurt' },
   { nombre: 'Mantequilla', emoji: '🧈', categoria: 'Lácteos', en: 'butter' },
   { nombre: 'Huevos', emoji: '🥚', categoria: 'Lácteos', en: 'eggs' },
   { nombre: 'Arroz', emoji: '🍚', categoria: 'Otros', en: 'rice' },
@@ -167,7 +167,7 @@ const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onD
         emoji: item.emoji,
         categoria: item.categoria,
       });
-      setForm({ nombre: '', caduca: '' });
+      setForm({ nombre: '', caduca: 'ok' });
       setModalAbierto(false);
     } catch (error) {
       console.error('Error al añadir ingrediente:', error);

@@ -22,10 +22,11 @@ const App = () => {
 
     useEffect(() => {
         getIngredientesNevera()
-            .then((data) => {
-                setIngredientesNevera(data);
-            })
-            .catch((err) => console.error('ERROR NEVERA:', err));
+        .then((data) => setIngredientesNevera(data))
+        .catch((err) => console.error('ERROR NEVERA:', err));
+        getIngredientesCompra()
+        .then(data => setIngredientesCompra(data))
+        .catch(err => console.error('ERROR COMPRA:', err));
     }, []);
 
     useWebSocket((mensaje) => {
@@ -92,6 +93,7 @@ const App = () => {
                                 const item = CATALOGO.find(c => c.nombre === nombre);
                                 return item?.en || nombre;
                             })}
+                            ingredientesNevera={ingredientesNevera}
                         />
                     </>
                 ) : (
