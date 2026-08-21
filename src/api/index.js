@@ -180,3 +180,27 @@ export async function getRecetas(ingredientes = []) {
     if (!response.ok) throw new Error('Error al obtener recetas');
     return await response.json();
 }
+
+export async function getFavoritas() {
+    const response = await fetch(`${BASE_URL}/favoritas`);
+    if (!response.ok) throw new Error('Error al obtener favoritas');
+    return await response.json();
+}
+
+export async function addFavorita(receta) {
+    const response = await fetch(`${BASE_URL}/favoritas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(receta),
+    });
+    if (!response.ok) throw new Error('Error al guardar favorita');
+    return await response.json();
+}
+
+export async function deleteFavorita(id) {
+    const response = await fetch(`${BASE_URL}/favoritas/${id}`, {
+        method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Error al eliminar favorita');
+    return await response.json();
+}
