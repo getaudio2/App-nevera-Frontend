@@ -5,6 +5,7 @@ import Nevera from './components/Nevera.jsx';
 import Compra from './components/Compra.jsx';
 import Recetas from './components/Recetas.jsx';
 import { CATALOGO } from './components/Nevera.jsx'
+import { usePushNotifications } from './hooks/usePushNotifications.js';
 
 const App = () => {
     const [ingredientesNevera, setIngredientesNevera] = useState([]);
@@ -19,6 +20,8 @@ const App = () => {
                 : [...prev, nombre]
         );
     };
+
+    usePushNotifications();
 
     useEffect(() => {
         getIngredientesNevera()

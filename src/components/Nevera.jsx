@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { addIngredienteNevera, editarIngredienteNevera, moverIngredienteACompra, eliminarIngredienteNevera } from '../api/index.js';
+import { addIngredienteNevera, editarIngredienteNevera, moverIngredienteACompra, eliminarIngredienteNevera, confirmarTicket } from '../api/index.js';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import Tesseract from 'tesseract.js';
 
@@ -131,15 +131,13 @@ const Nevera = ({ ingredientes, seleccionados, onToggle, onSeleccionarTodos, onD
 
   const handleConfirmarEscaneo = async () => {
     try {
-        await Promise.all(ingredientesDetectados.map(item =>
-            addIngredienteNevera({
-                nombre: item.nombre,
-                nombre_en: item.en,
-                emoji: item.emoji,
-                categoria: item.categoria,
-                caduca: item.caduca,
-            })
-        ));
+        await confirmarTicket(ingredientesDetectados.map(item => ({
+            nombre: item.nombre,
+            nombre_en: item.en,
+            emoji: item.emoji,
+            categoria: item.categoria,
+            caduca: item.caduca,
+        })));
         setIngredientesDetectados([]);
         setModalConfirmar(false);
     } catch (error) {

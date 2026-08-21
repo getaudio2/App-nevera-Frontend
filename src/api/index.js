@@ -33,6 +33,25 @@ export async function addIngredienteNevera(data) {
   }
 }
 
+export async function confirmarTicket(ingredientes) {
+  try {
+    const response = await fetch(`${BASE_URL}/nevera/confirmar-ticket`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ingredientes }),
+    });
+    if (!response.ok) {
+      throw new Error('Error al confirmar el ticket');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 export async function editarIngredienteNevera(id, data) {
   try {
     const response = await fetch(`${BASE_URL}/nevera/${id}`, {
